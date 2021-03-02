@@ -23,11 +23,12 @@ shiftLetter a b
 
 -- Chapter 9 asks the reader to implement a Caesar cipher:
 caesar :: Int -> String -> String
-caesar shift text = map (\x -> (shiftLetter shift) x) text
+caesar shift text = map (shiftLetter shift) text
 
 testCaesar :: IO()
 testCaesar = do
-    let testString   = "zZbCd"
+    let 
+        testString   = "zZbCd"
         testString2  = "aAcDe"
         testPassed   = (caesar 1 testString)               == testString2
         testPassed2  = (caesar (-1) $ caesar 1 testString) == testString
@@ -46,7 +47,7 @@ enSpace :: String -> String -> String
 enSpace deSpaced original = format deSpaced (words original) []
     where
         format :: String -> [String] -> String -> String
-        format [] ys zs = take (length zs - 1) zs
+        format [] ys       zs = take (length zs - 1) zs
         format xs (y : ys) zs = format (drop (length y) xs)
                                        ys
                                        (zs ++ ((take (length y) xs) ++ " "))
