@@ -39,32 +39,32 @@ testCaesar = do
            that you used to encipher it.  -}
 --
 
--- Chapter 11 asks the reader to implement a Vigenere cipher:
-vigenere :: String -> String -> String
-vigenere key text = format enciphered (words text) []
+deSpace :: String -> String
+deSpace text = concat $ words text
+
+enSpace :: String -> String -> String
+enSpace deSpaced original = format deSpaced (words original) []
     where
-        fullKey    = take (length $ concat $ words $ text) $ cycle key
-        paired     = zip fullKey $ concat $ words text
-        enciphered = [shiftLetter (letterToInt $ fst c) (snd c) | c <- paired]
-    
         format :: String -> [String] -> String -> String
-        format [] ys       zs = take (length zs - 1) zs
-        format xs (y : ys) zs = format (drop (length y) xs) 
-                                       ys 
+        format [] ys zs = take (length zs - 1) zs
+        format xs (y : ys) zs = format (drop (length y) xs)
+                                       ys
                                        (zs ++ ((take (length y) xs) ++ " "))
 
-unVigenere :: String -> String -> String
-unVigenere key text = format deciphered (words text) []
+-- Chapter 11 asks the reader to implement a Vigenere cipher:
+vigenere :: String -> String -> String
+vigenere key text = enSpace enciphered text
     where
-        fullKey    = take (length $ concat $ words $ text) $ cycle key
-        paired     = zip fullKey $ concat $ words text
+        fullKey    = take (length $ deSpace text) $ cycle key
+        paired     = zip fullKey $ deSpace text
+        enciphered = [shiftLetter (letterToInt $ fst c) (snd c) | c <- paired]
+
+unVigenere :: String -> String -> String
+unVigenere key text = enSpace deciphered text
+    where
+        fullKey    = take (length $ deSpace text) $ cycle key
+        paired     = zip fullKey $ deSpace text
         deciphered = [shiftLetter (- (letterToInt $ fst c)) (snd c) | c <- paired]
-    
-        format :: String -> [String] -> String -> String
-        format [] ys       zs = take (length zs - 1) zs
-        format xs (y : ys) zs = format (drop (length y) xs) 
-                                       ys 
-                                       (zs ++ ((take (length y) xs) ++ " "))
 {- ^ Note: As described in the textbook, the repeating key does not consider
      the spaces in the original plaintext. To get the exact same result as the
      book expects, you need to remove the spaces before enciphering and then
