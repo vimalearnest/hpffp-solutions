@@ -9,6 +9,10 @@ module Ex where
 
 -- simplified definition of foldr
 -- not tail recursive
+
+import Data.Time
+import Data.List (sortBy)
+
 foldr' :: (a -> b -> b) -> b -> [a] -> b
 foldr' f z [] = z
 foldr' f z (x:xs) = f x (foldr' f z xs)
@@ -78,3 +82,68 @@ foldl' f acc (x:xs) = foldl' f (f acc x) xs
 -- (g) foldr (flip const) 0 "tacos"
 -- (h) foldl const 0 "burritos"
 -- (i) foldl const 'z' [1..5]
+
+-- Exercises : Database processing
+
+data DatabaseItem = DbString String
+                  | DbNumber Integer
+                  | DbDate   UTCTime
+                  deriving (Eq, Ord, Show)
+
+theDatabase :: [DatabaseItem]
+theDatabase =
+  [ DbDate (UTCTime
+            (fromGregorian 1911 5 1)
+            (secondsToDiffTime 34123))
+  , DbNumber 9001
+  , DbString "Hello, world!"
+  , DbDate (UTCTime
+             (fromGregorian 1921 5 1)
+             (secondsToDiffTime 34123))
+  ]
+
+-- 1.
+
+-- note here the order of the result is reversed because we use cons
+filterDbDate :: [DatabaseItem] -> [UTCTime]
+filterDbDate db = go db []
+  where  go [] acc = acc
+         go ((DbDate d) : rest) acc = go rest (d : acc)
+         go (_ : rest) acc = go rest acc
+
+-- we can implement this using foldr (point free)
+
+filterDbDate' :: [DatabaseItem] -> [UTCTime]
+filterDbDate' = foldr (\i acc -> case i of
+                                   DbDate d -> d : acc
+                                   _ -> acc) []
+
+-- 2.
+
+filterDbNumber :: [DatabaseItem] -> [Integer]
+filterDbNumber = foldr (\i acc -> case i of
+                                   DbNumber n -> n : acc
+                                   _ -> acc) []
+
+-- 3.
+
+-- for sorting I referred :
+-- https://ro-che.info/articles/2016-04-02-descending-sort-haskell
+mostRecent :: [DatabaseItem] -> UTCTime
+mostRecent = head . sortBy (flip compare) . filterDbDate
+
+-- 4.
+
+sumDb :: [DatabaseItem] -> Integer
+sumDb = sum . filterDbNumber
+
+-- 5.
+
+avgDb :: [DatabaseItem] -> Double
+avgDb db = (fromIntegral (sum nums)) / (fromIntegral (length nums))
+           where
+             nums = filterDbNumber db
+
+-- Exercises : Scans Exercises
+
+-- 1.
