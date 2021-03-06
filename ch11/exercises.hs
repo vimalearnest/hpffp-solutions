@@ -388,9 +388,6 @@ testCapitalizeParagraph = do
 --
 
 -- Exercise: Phone exercise (page 450)
--- The next two exercises for this chapter are pretty meaty. This one
--- deserves a little consideration.
-
 convo :: [String]
 convo =
     [ "Wanna play 20 questions."
@@ -443,7 +440,7 @@ testReverseTaps = do
     else putStrLn "Test failed!" 
 
 reverseConvo :: [String] -> [Button] -> [[(Digit, Presses)]]
-reverseConvo conv phone = map (reverseTaps phone) $ concat convo
+reverseConvo conv phone = map (reverseTaps phone) $ concat conv
 
 -- 3. 
 fingerTaps :: [(Digit, Presses)] -> Presses
