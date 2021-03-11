@@ -6,6 +6,11 @@ module Cipher where
 
 import Data.Char
 
+checkTests :: [Bool] -> IO()
+checkTests xs = if   all (== True) xs
+                then putStrLn "Test passed!"
+                else putStrLn "Test failed!"
+
 letterToInt :: Char -> Int
 letterToInt a  = length $ takeWhile (\x -> x /= toLower a) ['a'..'z']
 
@@ -30,46 +35,76 @@ testCaesar = do
     let 
         testString   = "zZbCd"
         testString2  = "aAcDe"
-        testPassed   = (caesar 1 testString)               == testString2
-        testPassed2  = (caesar (-1) $ caesar 1 testString) == testString
+        tests = [ (caesar 1 testString)               == testString2
+                , (caesar (-1) $ caesar 1 testString) == testString ]
 
-    if   testPassed && testPassed2
-    then putStrLn "Test passed!"
-    else putStrLn "Test failed!"
+    checkTests tests
 {- ^ Note: In order to "unCaesar", just pass it the opposite amount of shift
            that you used to encipher it.  -}
+
+stringToInt :: String -> Int
+stringToInt s = parse s 0 1 
+    where
+        parse :: String -> Int -> Int -> Int
+        parse []       a b       = a * b
+        parse (x : xs) a b
+            | x == '-' && b == 1 = parse xs a                           (-1)
+            | isDigit x          = parse xs ((a * 10) + (digitToInt x)) b
+            | otherwise          = parse xs a                           b
+
+-- Chapter 13 asks the reader to implement an interactive version of this cipher:
+iCaesar :: IO()
+iCaesar = do
+    putStr "Enter Text: "
+    text  <- getLine
+    putStr "Enter Shift: "
+    shift <- getLine 
+    putStrLn $ "Enciphered: " ++ (caesar (stringToInt shift) text) 
 --
 
-deSpace :: String -> String
-deSpace text = concat $ words text
+removeNonLetters :: String -> String
+removeNonLetters text = filter isLetter text
 
-enSpace :: String -> String -> String
-enSpace deSpaced original = format deSpaced (words original) []
-    where
-        format :: String -> [String] -> String -> String
-        format [] ys       zs = take (length zs - 1) zs
-        format xs (y : ys) zs = format (drop (length y) xs)
-                                       ys
-                                       (zs ++ ((take (length y) xs) ++ " "))
+data PreformatMode = Letters | NonLetters
+
+returnNonLetters :: String -> String -> String
+returnNonLetters text original = insert 0 text $ preformat original Letters [(0, "")]
+    where 
+        preformat :: String -> PreformatMode -> [(Int, String)] -> [(Int, String)]
+        preformat []       _          ys         = reverse ys
+        preformat (x : xs) Letters    (y   : ys) = case isLetter x of
+            False -> preformat xs NonLetters (((\(a, b) -> (a,     b ++ [x])) y) : ys)
+            True  -> preformat xs Letters    (((\(a, b) -> (a + 1, b))        y) : ys)
+        preformat (x : xs) NonLetters c@(y : ys) = case isLetter x of
+            False -> preformat xs NonLetters (((\(a, b) -> (a,     b ++ [x])) y) : ys)
+            True  -> preformat xs Letters    ((1, "")                            : c)
+
+        insert :: Int -> String -> [(Int, String)] -> String
+        insert _ xs []            = xs
+        insert d xs ((a, b) : ys) = insert (d + a + length b) 
+                                           ((take (d + a) xs) ++ b ++ (drop (d + a) xs)) 
+                                           ys
 
 -- Chapter 11 asks the reader to implement a Vigenere cipher:
 vigenere :: String -> String -> String
-vigenere key text = enSpace enciphered text
+vigenere key text   = returnNonLetters enciphered text
     where
-        fullKey    = take (length $ deSpace text) $ cycle key
-        paired     = zip fullKey $ deSpace text
-        enciphered = [shiftLetter (letterToInt $ fst c) (snd c) | c <- paired]
+        parsed      = removeNonLetters text
+        fullKey     = take (length parsed) $ cycle $ removeNonLetters key
+        paired      = zip fullKey parsed
+        enciphered  = [shiftLetter (letterToInt $ fst c) (snd c) | c <- paired]
 
 unVigenere :: String -> String -> String
-unVigenere key text = enSpace deciphered text
+unVigenere key text = returnNonLetters deciphered text
     where
-        fullKey    = take (length $ deSpace text) $ cycle key
-        paired     = zip fullKey $ deSpace text
-        deciphered = [shiftLetter (- (letterToInt $ fst c)) (snd c) | c <- paired]
-{- ^ Note: As described in the textbook, the repeating key does not consider
-     the spaces in the original plaintext. To get the exact same result as the
-     book expects, you need to remove the spaces before enciphering and then
-     put them back in afterwards.  -}
+        parsed      = removeNonLetters text
+        fullKey     = take (length parsed) $ cycle $ removeNonLetters key
+        paired      = zip fullKey parsed
+        deciphered  = [shiftLetter (- (letterToInt $ fst c)) (snd c) | c <- paired]
+     {- To account for errors during interactive input and match the textbook's
+        results exactly, this function removes all non-letters before
+        enciphering/deciphering and then it re-inserts them afterwards in
+        the same positions.  -}
 
 testVigenere :: IO()
 testVigenere = do
@@ -77,12 +112,34 @@ testVigenere = do
         testString  = "Meet at dawn"
         cipherKey   = "ALLY"
         testString2 = "Mppr ae oywy"
-        enciphered  = vigenere cipherKey testString
-        testPassed  = enciphered == testString2
-        testPassed2 = unVigenere cipherKey enciphered == testString
+        testString3 = "Meet, at dawn?"
+        cipherKey2  = "Ally!"
+        testString4 = "Mppr, ae oywy?"
+        enciphered  = vigenere cipherKey  testString
+        enciphered2 = vigenere cipherKey2 testString3
+        tests = [ enciphered                        == testString2
+                , unVigenere cipherKey enciphered   == testString
+                , enciphered2                       == testString4
+                , unVigenere cipherKey2 enciphered2 == testString3 ]
 
-    if   testPassed && testPassed2
-    then putStrLn "Test passed!"
-    else putStrLn "Test failed!"
+    checkTests tests
+--
+
+-- Chapter 13 asks the user to implement an interactive version of this cipher:
+iVigenere :: IO()
+iVigenere = do
+    putStr "Enter Text: "
+    text <- getLine
+    putStr "Enter Key: "
+    key  <- getLine
+    putStr "(E)ncrypt or (D)ecrypt? "
+    op   <- getLine
+    if null op then putStrLn "Invalid input!" else
+        case (head op) of
+            'e' -> putStrLn $ "Enciphered: " ++ (vigenere   key text)
+            'E' -> putStrLn $ "Enciphered: " ++ (vigenere   key text)
+            'd' -> putStrLn $ "Deciphered: " ++ (unVigenere key text)
+            'D' -> putStrLn $ "Deciphered: " ++ (unVigenere key text)
+            _   -> putStrLn "Invalid input!"
 --
 
