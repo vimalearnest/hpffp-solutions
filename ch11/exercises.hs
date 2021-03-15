@@ -1,9 +1,6 @@
 {- Exercises for Chapter 11 from the wonderful book: "Haskell Programming from 
    First Principles".   -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleInstances #-}
-
 import Data.Char
 import Data.List
 

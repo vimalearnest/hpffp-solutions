@@ -135,11 +135,9 @@ iVigenere = do
     putStr "(E)ncrypt or (D)ecrypt? "
     op   <- getLine
     if null op then putStrLn "Invalid input!" else
-        case (head op) of
+        case (toLower $ head op) of
             'e' -> putStrLn $ "Enciphered: " ++ (vigenere   key text)
-            'E' -> putStrLn $ "Enciphered: " ++ (vigenere   key text)
             'd' -> putStrLn $ "Deciphered: " ++ (unVigenere key text)
-            'D' -> putStrLn $ "Deciphered: " ++ (unVigenere key text)
             _   -> putStrLn "Invalid input!"
 --
 
