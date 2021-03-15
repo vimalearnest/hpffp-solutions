@@ -2,7 +2,7 @@
    Train A takes 7.5 seconds to overtake Train B. How long in feet is Train A? 
    This problem was put forth by a YouTube channel involving Shinkansen trains.
   
-   Although this is a pretty short snippet. I had a lot of fun writing it and
+   Although this is a pretty short snippet, I had a lot of fun writing it and
    feel like the language lends itself to this kind of thing. Feel free to correct
    my math if I got the result wrong. I am mostly confident in it.  -}
 

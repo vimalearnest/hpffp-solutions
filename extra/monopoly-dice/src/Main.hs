@@ -49,7 +49,7 @@ naiveAverageChanceToSkip = (foldr (\a -> (+ (chanceToSkipFrom a))) 0 [2..12]) / 
    then there is an average chance of almost 10% to land on the target space, 
    an average chance of almost 50% to not overshoot the target space, and
    probably a miniscule chance to miss the 2 - 12 space window entirely." This
-   means that something slightly under naiveAverageChanceToLand is the probably
+   means that something slightly under naiveAverageChanceToLand is probably
    the answer in a universe where there are no second attempts per revolution.
    But, we see that there should be lots of second attempts per revolution,
    as naiveAverageChanceToSkip is over 45%. I was unsure how much this would

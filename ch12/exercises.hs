@@ -34,7 +34,7 @@ testReplaceThe = do
 
 -- 2. 
 isVowel :: Char -> Bool
-isVowel a = if elem a "aeiouAEIOU" then True else False
+isVowel a = elem a "aeiouAEIOU" 
 
 countTheBeforeVowel :: String -> Integer
 countTheBeforeVowel a = count (words a) 0
