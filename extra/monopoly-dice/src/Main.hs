@@ -158,8 +158,9 @@ intToDouble n = if n > 0
 main :: IO()
 main = do
     hSetBuffering stdout NoBuffering
-    putStrLn $ "Caution: Input very large numbers (> 20,000,000) risks a crash.\n"
-             ++ "Any number (> 200,000) should be a sufficient sample size."
+    putStrLn $ "Caution: Very large inputs (> 20,000,000) risk using up too much"
+             ++ " RAM on many systems."
+    putStrLn $ "Any sample size (> 200,000) is sufficient."
     putStr "How many rolls to simulate? "
     rolls  <- getLine
     putStrLn $ "Simulating " ++ rolls ++ " dice rolls on the monopoly board..."

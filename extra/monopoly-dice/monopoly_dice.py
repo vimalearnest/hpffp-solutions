@@ -95,6 +95,8 @@ def get_events(board):
 # Note: Do not view board state unless it's a very small simulation. It is
 #       for observing how the data structure works using small inputs.
 def main():
+    print("Caution: Very large inputs (> 100,000,000) risk using up too much RAM on")
+    print("many systems. Any sample size (> 200,000) is sufficient.")
     rolls = input("How many rolls to simulate? ")
     print(f"Simulating {rolls} dice rolls on the monopoly board...")
     board = simulate(int(rolls))
