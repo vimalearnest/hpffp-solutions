@@ -45,13 +45,39 @@ avg_chance_to_land = sum([chance_to_land_from(a) for a in dice_range]) / len(dic
 avg_chance_to_skip = sum([chance_to_skip_from(a) for a in dice_range]) / len(dice_range)
 # ^ About 45.5%
 
-# The simulation process simply rolls the dice to move the player around the board and 
-# keeps track of which spaces were visited on which revolution.
+#  At this point I've got a simple model of the probabilities within dice-range
+#  of landing on the spot you want, or overshooting it. The way that I
+#  interpret this data is "If you are within 2 - 12 spaces of the target space
+#  then there is an average chance of almost 10% to land on the target space, 
+#  an average chance of almost 50% to not overshoot the target space, and
+#  probably a miniscule chance to miss the 2 - 12 space window entirely." This
+#  means that something slightly under naiveAverageChanceToLand is probably
+#  the answer in a universe where there are no second attempts per revolution.
+#  But, we see that there should be lots of second attempts per revolution,
+#  as naiveAverageChanceToSkip is about 45%. I was unsure how much this would
+#  wind up boosting the final result by in the long run, so I built a simulation 
+#  to test it.
+
+#  The result winds up being about a 14.28% chance to land on a given space
+#  for two consecutive revolutions. It would be neat to refine the model (above)
+#  based on the results of the simulation (below). 
+
+# To protect against a divide by zero error on very small input.
+def get_probability(events, potential_events):
+    if potential_events > 0:
+        return events / potential_events * 100
+    return 0
+
+# The simulation tracks each potential event and each event during the
+# simulation, and returns information about the total probability
+# at the end.
 def simulate(rolls):
     player_at = 0
     revolution = 0
-    board = {x : [] for x in range(num_spaces)}
+    board = [[] for x in range(num_spaces)]
     board[0].append(0)
+    events = 0
+    potential_events = 0
     for roll in range(rolls):
         dice_a = roll_d6()
         dice_b = roll_d6()
@@ -59,57 +85,36 @@ def simulate(rolls):
         if player_lands_at < player_at:
             revolution += 1
         player_at = player_lands_at
-        board[player_lands_at].append(revolution)
-    return board
-
-# When passed a completed simulation, get_events() will go through every space and
-# count every event (when a space's list of visits includes consecutive revolutions)
-# and every potential event (every time a space was visited after the first 
-# revolution), calculate the probability, and return the results as a dictionary.
-def get_events(board):
-    events = 0
-    potential_events = 0
-    spaces = list(board.values())
-    for space in spaces:
-        for potential_event in range(len(space)):
-            if potential_event > 0:
-                a = space[potential_event]
-                b = space[potential_event - 1]
-                if a == (b + 1):
-                    events += 1
-                    potential_events += 1
-                else:
-                    potential_events += 1
+        space = board[player_lands_at] 
+        space.append(revolution)
+        if len(space) >= 2:
+            a = space[-1]
+            b = space[-2]
+            if a == (b + 1):
+                events += 1
+                potential_events += 1
+                board[player_lands_at] = list(filter((lambda c: c >= a), space))
+            else:
+                potential_events += 1
     return { "events": events,
              "potential_events": potential_events,
-             "probability": events / potential_events * 100 }
+             "probability": get_probability(events, potential_events) }
 
-# Simulation Output: (for 20,000,000 rolls of the dice)
-#   > How many rolls to simulate? 20000000
-#   > Simulating 20000000 dice rolls on the monopoly board...
-#   > Simulation complete! Calculating results...
-#   > There were 2857894 events out of 19999961 possible events.
-#   > The simulated probability of the event occuring is 14.289497864520836
-#   > Would you like to view the final board state (y/Y to confirm)? n
-#   > Exiting program.
-# Note: Do not view board state unless it's a very small simulation. It is
-#       for observing how the data structure works using small inputs.
 def main():
-    print("Caution: Very large inputs (> 100,000,000) risk using up too much RAM on")
-    print("many systems. Any sample size (> 200,000) is sufficient.")
-    rolls = input("How many rolls to simulate? ")
-    print(f"Simulating {rolls} dice rolls on the monopoly board...")
-    board = simulate(int(rolls))
-    print("Simulation complete! Calculating results...")
-    results = get_events(board)
-    print(f"There were {results['events']} events out of {results['potential_events']} possible events.")
-    print(f"The simulated probability of the event occuring is {results['probability']}")
-    confirm = input("Would you like to view the final board state (y/Y to confirm)? ")
-    if confirm.lower()[:1] == 'y':
-        print(board)
-    else:
-        print("Exiting program.")
-    
+    print("Question: What are the odds of landing on the same space on a monopoly") 
+    print("board for consecutive revolutions?")
+    while True:
+        print("Note: sample sizes that are very low (such as 100,000) won't be super accurate.")
+        rolls = int(input("\nHow many rolls to simulate? "))
+        print(f"Simulating {rolls} dice rolls on the monopoly board...")
+        results = simulate(int(rolls))
+        print("Simulation complete!")
+        print(f"There were {results['events']} events out of {results['potential_events']} possible events.")
+        print(f"The simulated probability of the event occuring is {results['probability']}")
+        again = input("\nWould you like to run another simulation (y/Y to confirm)? ").lower()[:1]
+        if again != 'y':
+            break
+
 if __name__ == "__main__":
     main()
 
