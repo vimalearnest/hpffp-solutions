@@ -51,10 +51,10 @@ avg_chance_to_skip = sum([chance_to_skip_from(a) for a in dice_range]) / len(dic
 #  then there is an average chance of almost 10% to land on the target space, 
 #  an average chance of almost 50% to not overshoot the target space, and
 #  probably a miniscule chance to miss the 2 - 12 space window entirely." This
-#  means that something slightly under naiveAverageChanceToLand is probably
+#  means that something slightly under avg_chance_to_land is probably
 #  the answer in a universe where there are no second attempts per revolution.
 #  But, we see that there should be lots of second attempts per revolution,
-#  as naiveAverageChanceToSkip is about 45%. I was unsure how much this would
+#  as avg_chance_to_skip is about 45%. I was unsure how much this would
 #  wind up boosting the final result by in the long run, so I built a simulation 
 #  to test it.
 
@@ -74,8 +74,8 @@ def get_probability(events, potential_events):
 def simulate(rolls):
     player_at = 0
     revolution = 0
-    board = [[] for x in range(num_spaces)]
-    board[0].append(0)
+    board = [None for x in range(num_spaces)]
+    board[0] = 0
     events = 0
     potential_events = 0
     for roll in range(rolls):
@@ -86,16 +86,11 @@ def simulate(rolls):
             revolution += 1
         player_at = player_lands_at
         space = board[player_lands_at] 
-        space.append(revolution)
-        if len(space) >= 2:
-            a = space[-1]
-            b = space[-2]
-            if a == (b + 1):
+        if space is not None:
+            if revolution == space + 1:
                 events += 1
-                potential_events += 1
-                board[player_lands_at] = list(filter((lambda c: c >= a), space))
-            else:
-                potential_events += 1
+            potential_events += 1
+        board[player_lands_at] = revolution
     return { "events": events,
              "potential_events": potential_events,
              "probability": get_probability(events, potential_events) }
@@ -107,7 +102,7 @@ def main():
         print("Note: sample sizes that are very low (such as 100,000) won't be super accurate.")
         rolls = int(input("\nHow many rolls to simulate? "))
         print(f"Simulating {rolls} dice rolls on the monopoly board...")
-        results = simulate(int(rolls))
+        results = simulate(rolls)
         print("Simulation complete!")
         print(f"There were {results['events']} events out of {results['potential_events']} possible events.")
         print(f"The simulated probability of the event occuring is {results['probability']}")
