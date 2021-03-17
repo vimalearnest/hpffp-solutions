@@ -7,16 +7,16 @@ Q: "What are the odds of landing on the same monopoly space two revolutions in a
 A:  
 """
 
-from random import randrange
+from random    import randrange
 from itertools import product
 
 num_spaces = 40
 
 # First, model the dice:
-d6 = list(range(1, 7))
+d6                 = list(range(1, 7))
 all_possible_rolls = list(product(d6, d6))
-all_possible_sums = list(map(sum, all_possible_rolls))
-dice_range = range(2, 13)
+all_possible_sums  = list(map(sum, all_possible_rolls))
+dice_range         = range(2, 13)
 
 def roll_d6():
     return randrange(1, 7)
@@ -71,30 +71,29 @@ def get_probability(events, potential_events):
 # The simulation tracks each potential event and each event during the
 # simulation, and returns information about the total probability
 # at the end.
-def simulate(rolls):
-    player_at = 0
+def run_simulation(rolls):
+    board      = [None for space in range(num_spaces)]
+    board[0]   = 0
+    player_at  = 0
     revolution = 0
-    board = [None for x in range(num_spaces)]
-    board[0] = 0
-    events = 0
-    potential_events = 0
+    events     = 0
+    potentials = 0
     for roll in range(rolls):
-        dice_a = roll_d6()
-        dice_b = roll_d6()
-        player_lands_at = (player_at + dice_a + dice_b) % num_spaces
+        player_lands_at = (player_at + roll_d6() + roll_d6()) % num_spaces
         if player_lands_at < player_at:
             revolution += 1
         player_at = player_lands_at
-        space = board[player_lands_at] 
+        space     = board[player_lands_at] 
         if space is not None:
             if revolution == space + 1:
                 events += 1
-            potential_events += 1
+            potentials += 1
         board[player_lands_at] = revolution
-    return { "events": events,
-             "potential_events": potential_events,
-             "probability": get_probability(events, potential_events) }
+    return { "events":           events,
+             "potential_events": potentials,
+             "probability":      get_probability(events, potentials) }
 
+# Benchmark: 100,000,000 rolls in 7m32.8s; result of 14.29%.
 def main():
     print("Question: What are the odds of landing on the same space on a monopoly") 
     print("board for consecutive revolutions?")
@@ -102,7 +101,7 @@ def main():
         print("Note: sample sizes that are very low (such as 100,000) won't be super accurate.")
         rolls = int(input("\nHow many rolls to simulate? "))
         print(f"Simulating {rolls} dice rolls on the monopoly board...")
-        results = simulate(rolls)
+        results = run_simulation(rolls)
         print("Simulation complete!")
         print(f"There were {results['events']} events out of {results['potential_events']} possible events.")
         print(f"The simulated probability of the event occuring is {results['probability']}")
@@ -112,4 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+    
