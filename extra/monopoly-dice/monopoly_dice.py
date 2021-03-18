@@ -18,8 +18,8 @@ all_possible_rolls = list(product(d6, d6))
 all_possible_sums  = list(map(sum, all_possible_rolls))
 dice_range         = range(2, 13)
 
-def roll_d6():
-    return randrange(1, 7)
+def roll_2d6():
+    return randrange(1, 7) + randrange(1, 7)
 
 # The chance to land on a given tile from within 2 - 12 spaces:
 def chance_to_land_from(spaces_away):
@@ -79,7 +79,7 @@ def run_simulation(rolls):
     events     = 0
     potentials = 0
     for roll in range(rolls):
-        player_lands_at = (player_at + roll_d6() + roll_d6()) % num_spaces
+        player_lands_at = (player_at + roll_2d6()) % num_spaces
         if player_lands_at < player_at:
             revolution += 1
         player_at = player_lands_at
@@ -93,10 +93,10 @@ def run_simulation(rolls):
              "potential_events": potentials,
              "probability":      get_probability(events, potentials) }
 
-# Benchmark: 100,000,000 rolls in 7m32.8s; result of 14.29%.
+# Benchmark: 
 def main():
     print("Question: What are the odds of landing on the same space on a monopoly") 
-    print("board for consecutive revolutions?")
+    print("board for consecutive revolutions?\n")
     while True:
         print("Note: sample sizes that are very low (such as 100,000) won't be super accurate.")
         rolls = int(input("\nHow many rolls to simulate? "))
@@ -109,6 +109,7 @@ def main():
         if again != 'y':
             break
 
+# Benchmark: 5,000,000 rolls in 0m23.735s; result of about 14.29%. Used negligible RAM.
 if __name__ == "__main__":
     main()
     
