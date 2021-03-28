@@ -22,7 +22,8 @@ import System.Exit   (exitSuccess)
 import Data.Char     (toLower)
 import Data.Maybe    (isNothing, isJust)
 import System.IO     (BufferMode(NoBuffering), hSetBuffering, stdout)
-import Fraction
+import Fraction      (Fraction(Fraction), simplifyFraction, 
+                      fracDiv, fractionToDouble)
 
 type Seed   = Int
 type Chance = Fraction
@@ -184,19 +185,21 @@ confirm xs = xs /= "" && (toLower . head) xs == 'y'
 main :: IO ()
 main = do 
     hSetBuffering stdout NoBuffering
-    putStrLn $ "Question: What are the odds of landing on the same space on a" ++
+    putStrLn $ "\nQuestion: What are the odds of landing on the same space on a" ++
                " monopoly\nboard for consecutive revolutions?\n"
     forever $ do
         putStrLn $ "Note: sample sizes that are very low (such as 100,000) won't be"
-                 ++ "super accurate." ++ "\nCaution: This program uses a lot of RAM."
-                 ++ " inputs of over 3,000,000 are unwise for now."
+                 ++ "super accurate." ++ "\n\nCaution: This program uses a lot of RAM"
+                 ++ " currently, at about 128MB for an input of 500k" ++ "\nand about "
+                 ++ "2GB at 25 million." ++ " An input of 500k is more than sufficient"
+                 ++ " to compute the\nanswer."
         putStr "\nHow many rolls to simulate? "
         numRolls <- getLine
-        putStr "\nEnter a seed for the simulation: "
+        putStr "Enter a seed for the simulation: "
         seed     <- getLine
-        putStrLn $ "Simulating " ++ numRolls ++ " dice rolls on the monopoly board..."
+        putStrLn $ "\nSimulating " ++ numRolls ++ " dice rolls on the monopoly board..."
         let result = findChance (read seed) (read numRolls)
-        putStrLn $ "events / potential events: " ++ (show result) ++ " " ++
+        putStrLn $ "\nEvents / Potential Events: " ++ (show result) ++ " " ++
                    "or " ++ (show . percentageChance $ result) ++ "%"
         putStr "\nWould you like to run another simulation (y/Y to confirm)? "
         again <- getLine

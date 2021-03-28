@@ -43,7 +43,8 @@ instance Num Fraction where
         let m = lcm d1 d2
         in  simplifyFraction $ Fraction ((n1 * m `div` d1) + (n2 * m `div` d2)) m
 
-    (*) (Fraction n1 d1) (Fraction n2 d2) = Fraction (n1 * n2) (d1 * d2)
+    (*) (Fraction n1 d1) (Fraction n2 d2) = 
+        simplifyFraction $ Fraction (n1 * n2) (d1 * d2)
 
     (-) (Fraction n1 d1) (Fraction n2 d2) =
         let m = lcm d1 d2
