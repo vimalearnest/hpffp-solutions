@@ -93,7 +93,7 @@ def run_simulation(rolls):
              "potential_events": potentials,
              "probability":      get_probability(events, potentials) }
 
-# Benchmark: 
+# Benchmark: 5,000,000 rolls in 0m23.735s; result of about 14.29%. Used negligible RAM.
 def main():
     print("Question: What are the odds of landing on the same space on a monopoly") 
     print("board for consecutive revolutions?\n")
@@ -109,7 +109,6 @@ def main():
         if again != 'y':
             break
 
-# Benchmark: 5,000,000 rolls in 0m23.735s; result of about 14.29%. Used negligible RAM.
 if __name__ == "__main__":
     main()
     

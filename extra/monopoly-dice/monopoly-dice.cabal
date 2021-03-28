@@ -1,5 +1,5 @@
 name:                monopoly-dice
-version:             0.0.0.1
+version:             0.0.0.2
 -- synopsis:
 -- description:
 homepage:            https://github.com/vimalearnest/hpffp-solutions
@@ -8,15 +8,22 @@ homepage:            https://github.com/vimalearnest/hpffp-solutions
 author:              sgibber2018
 maintainer:          sgibber2018@gmail.com
 --copyright:         
---category:            Web
+--category:          
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
 executable monopoly-dice
-  hs-source-dirs:      src
-  main-is:             Main.hs
-  default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5
-                     , random
+  hs-source-dirs:   exe
+  main-is:          Main.hs
+  default-language: Haskell2010
+  build-depends:    base >= 4.7 && < 5
+                  , monopoly-dice
+                  , random
+
+library
+  hs-source-dirs:   src
+  exposed-modules:  Fraction
+  default-language: Haskell2010
+  build-depends:    base >= 4.7 && < 5
 
