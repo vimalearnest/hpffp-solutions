@@ -11,10 +11,10 @@ data Fraction = Fraction
     , fractionDenominator :: Integer }
 
 instance Show Fraction where
-    show (Fraction n d) = 
-        if   (signum n == (-1)) || (signum d == (-1))
+    show a@(Fraction n d) = 
+        if   signum a == (-1)
         then "-" ++ (show . abs $ n) ++ "/" ++ (show . abs $ d)
-        else (show n) ++ "/" ++ (show d)
+        else (show . abs $ n) ++ "/" ++ (show . abs $ d)
 
 instance Eq Fraction where
     (==) a b = fractionToDouble a == fractionToDouble b
@@ -43,8 +43,7 @@ instance Num Fraction where
         let m = lcm d1 d2
         in  simplifyFraction $ Fraction ((n1 * m `div` d1) + (n2 * m `div` d2)) m
 
-    (*) (Fraction n1 d1) (Fraction n2 d2) = 
-        simplifyFraction $ Fraction (n1 * n2) (d1 * d2)
+    (*) (Fraction n1 d1) (Fraction n2 d2) = Fraction (n1 * n2) (d1 * d2)
 
     (-) (Fraction n1 d1) (Fraction n2 d2) =
         let m = lcm d1 d2
@@ -55,8 +54,10 @@ instance Num Fraction where
     abs (Fraction n d)    = Fraction (abs n) (abs d)
 
     signum (Fraction n d) = 
-        if   (signum n == (-1)) || (signum d == (-1))
-        then (- 1)
+        if   (signum n == (-1)) && (signum d == (-1))
+        then 1
+        else if (signum n == (-1)) || (signum d == (-1))
+        then (-1)
         else 1
 
     fromInteger a = Fraction a 1
