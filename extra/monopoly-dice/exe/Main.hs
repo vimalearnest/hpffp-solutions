@@ -20,7 +20,6 @@ import Data.List     (foldl')
 import Control.Monad (forever)
 import System.Exit   (exitSuccess)
 import Data.Char     (toLower)
-import Data.Maybe    (isNothing, isJust)
 import System.IO     (BufferMode(NoBuffering), hSetBuffering, stdout)
 import Fraction      (Fraction(Fraction), simplifyFraction, 
                       fracDiv, fractionToDouble)
