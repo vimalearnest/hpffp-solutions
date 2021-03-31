@@ -107,6 +107,9 @@ avgChanceToLandShort =
    the complete result without needing to run a simulation. On to the sim:  -}
 --------------------------------------------------------------------------------
 
+-- Goal: Find out where the space complexity is, exactly, and root it out.
+--       Let's get this baby to O(1)!
+
 {- Using the non-monadic random number generator from the random 1.1 module on
    stackage, as opposed to the monadic one from the last version, I have here
    taken the desired amount of rolls from an infinite list of values generated
@@ -132,7 +135,7 @@ landings xs = scanl (\a b -> (a + b) `mod` numSpaces) 0 xs
    list of lists is reversed, but that doesn't matter as an intermediate step:  -}
 reverseChunkByIncreasing :: [Integer] -> [[Integer]]
 reverseChunkByIncreasing xs = foldl' (\b a ->
-    if   (head . head) b < a 
+    if   (head . head $ b) < a 
     then ((a : (head b)) : (tail b))
     else [a] : b) [[head xs]] (tail xs)
 
@@ -145,7 +148,7 @@ reverseChunkByIncreasing xs = foldl' (\b a ->
    in the previous chunk:  -}
 findChance :: Seed -> Int -> Chance
 findChance s c =
-    let r = (reverseChunkByIncreasing . landings) $ rolls s c
+    let r = reverseChunkByIncreasing . landings $ rolls s c
         f = (\(Fraction n d) -> Fraction n (d - (integerLength $ last r))) 
     in  f . fst $ foldr (\a ((Fraction n d), ys) ->
         let events     = integerLength $ filter (`elem` a) ys

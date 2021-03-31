@@ -4,7 +4,8 @@
 
 module Cipher where
 
-import Data.Char
+import Data.Char -- to-do, encapsulate
+import Data.List (foldl')
 
 checkTests :: [Bool] -> IO()
 checkTests xs = if   all (== True) xs
@@ -32,8 +33,7 @@ caesar shift text = map (shiftLetter shift) text
 
 testCaesar :: IO()
 testCaesar = do
-    let 
-        testString   = "zZbCd"
+    let testString   = "zZbCd"
         testString2  = "aAcDe"
         tests = [ (caesar 1 testString)               == testString2
                 , (caesar (-1) $ caesar 1 testString) == testString ]
@@ -42,15 +42,17 @@ testCaesar = do
 {- ^ Note: In order to "unCaesar", just pass it the opposite amount of shift
            that you used to encipher it.  -}
 
+-- This is a pretty naive way to handle negative numbers, for now.
+isNegative :: String -> Bool
+isNegative [] = False
+isNegative xs = '-' `elem` xs
+
 stringToInt :: String -> Int
-stringToInt s = parse s 0 1 
-    where
-        parse :: String -> Int -> Int -> Int
-        parse []       a b       = a * b
-        parse (x : xs) a b
-            | x == '-' && b == 1 = parse xs a                           (-1)
-            | isDigit x          = parse xs ((a * 10) + (digitToInt x)) b
-            | otherwise          = parse xs a                           b
+stringToInt xs = (\a -> if isNegative xs then a * (-1) else a) $
+    foldl' (\b a -> 
+        if isDigit a 
+        then ((b * 10) + digitToInt a) 
+        else b) 0 xs
 
 -- Chapter 13 asks the reader to implement an interactive version of this cipher:
 iCaesar :: IO()
@@ -65,25 +67,12 @@ iCaesar = do
 removeNonLetters :: String -> String
 removeNonLetters text = filter isLetter text
 
-data PreformatMode = Letters | NonLetters
-
 returnNonLetters :: String -> String -> String
-returnNonLetters text original = insert 0 text $ preformat original Letters [(0, "")]
-    where 
-        preformat :: String -> PreformatMode -> [(Int, String)] -> [(Int, String)]
-        preformat []       _          ys         = reverse ys
-        preformat (x : xs) Letters    (y   : ys) = case isLetter x of
-            False -> preformat xs NonLetters (((\(a, b) -> (a,     b ++ [x])) y) : ys)
-            True  -> preformat xs Letters    (((\(a, b) -> (a + 1, b))        y) : ys)
-        preformat (x : xs) NonLetters c@(y : ys) = case isLetter x of
-            False -> preformat xs NonLetters (((\(a, b) -> (a,     b ++ [x])) y) : ys)
-            True  -> preformat xs Letters    ((1, "")                            : c)
-
-        insert :: Int -> String -> [(Int, String)] -> String
-        insert _ xs []            = xs
-        insert d xs ((a, b) : ys) = insert (d + a + length b) 
-                                           ((take (d + a) xs) ++ b ++ (drop (d + a) xs)) 
-                                           ys
+returnNonLetters text original = fst $
+    foldr (\a (b, c@(x : xs)) ->
+        if   not . isLetter $ a
+        then ((a : b), c)
+        else ((x : b), xs)) ([], reverse text) original
 
 -- Chapter 11 asks the reader to implement a Vigenere cipher:
 vigenere :: String -> String -> String
